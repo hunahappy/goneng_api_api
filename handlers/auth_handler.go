@@ -1,15 +1,18 @@
 package handlers
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/labstack/echo/v4"
 	"goneng_api_api/config"
 	"goneng_api_api/db"
 	mw "goneng_api_api/middleware"
 	"goneng_api_api/models"
+
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/labstack/echo/v4"
 )
 
 // Login POST /login
@@ -50,6 +53,21 @@ func Login(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			map[string]string{"message": "토큰 생성 실패"})
 	}
+
+	content := map[string]interface{}{
+		"user_id": req.Username,
+	}
+
+	// JSON으로 변환
+	jsonData, err := json.Marshal(content)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, _ = db.DB.Exec(
+		`INSERT INTO 로그 (장치, 구분, 내용, 토픽) VALUES ($1, $2, $3, $4)`,
+		"api_api", "login", jsonData, "login",
+	)
 
 	return c.JSON(http.StatusOK, models.LoginResponse{
 		Token:    signed,

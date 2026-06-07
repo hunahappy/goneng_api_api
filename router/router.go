@@ -48,6 +48,7 @@ func Setup() *echo.Echo {
 	// 에어컨 제어
 	api.POST("/post_set_on_aircon", handlers.AirconOn)
 	api.POST("/post_set_off_aircon", handlers.AirconOff)
+	api.POST("/upload_jpg", handlers.UploadJPG)
 
 	// 로그 조회
 	api.POST("/post_get_log", handlers.GetLog)
