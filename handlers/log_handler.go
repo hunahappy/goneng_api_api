@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
 	"goneng_api_api/db"
 	"goneng_api_api/models"
+
+	"github.com/labstack/echo/v4"
 )
 
 // GetLog POST /post_get_log
@@ -17,37 +18,30 @@ func GetLog(c echo.Context) error {
 			map[string]string{"message": "요청 형식 오류"})
 	}
 
+	// 기본값 처리
+	if req.StartDate == "" {
+		req.StartDate = "today"
+	}
+	if req.EndDate == "" {
+		req.EndDate = "today"
+	}
+
 	query := `
 		SELECT
-			TO_CHAR(log_time, 'YYYY-MM-DD HH24:MI:SS'),
-			COALESCE(device, ''),
-			COALESCE(gubun, ''),
-			COALESCE(content, '')
-		FROM log_table
-		WHERE 1=1
+			TO_CHAR(ts, 'YYYY-MM-DD HH24:MI:SS'),
+			장치,
+			구분,
+			내용
+		FROM public.로그
+		WHERE ts >= $1::date
+          AND ts < ($2::date + INTERVAL '1 day')
+		ORDER BY ts DESC
 	`
-	args := []interface{}{}
-	idx := 1
 
-	if req.Gubun != "" {
-		query += fmt.Sprintf(" AND gubun = $%d", idx)
-		args = append(args, req.Gubun)
-		idx++
-	}
-	if req.Device != "" {
-		query += fmt.Sprintf(" AND device = $%d", idx)
-		args = append(args, req.Device)
-		idx++
-	}
-	if req.Text != "" {
-		query += fmt.Sprintf(" AND content ILIKE $%d", idx)
-		args = append(args, "%"+req.Text+"%")
-		idx++
-	}
+	fmt.Printf("Executing query: %s\nWith params: start=%s, end=%s\n", query, req.StartDate, req.EndDate)
 
-	query += " ORDER BY log_time DESC LIMIT 1000"
+	rows, err := db.DB.Query(query, req.StartDate, req.EndDate)
 
-	rows, err := db.DB.Query(query, args...)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError,
 			map[string]string{"message": "DB 조회 오류: " + err.Error()})

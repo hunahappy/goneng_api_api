@@ -15,5 +15,5 @@ mqtt:
   password: "goneng11!"
 
 jwt:
-  secret: "goneng_jwt_secret_2024_please_change_in_production"
+  secret: "goneng_jwt_secret_2024_please_change_in_production11!"
   expire_hours: 24

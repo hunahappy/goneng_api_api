@@ -8,9 +8,11 @@ type LogEntry struct {
 }
 
 type LogRequest struct {
-	Gubun  string `json:"gubun"`
-	Device string `json:"device"`
-	Text   string `json:"text"`
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+	Gubun     string `json:"gubun"`
+	Device    string `json:"device"`
+	Text      string `json:"text"`
 }
 
 type LogResponse struct {
